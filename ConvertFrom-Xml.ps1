@@ -3,16 +3,6 @@
 .VERSION 1.0
 .GUID 0c3a31f4-028b-498e-afa0-3ed0d22cac6a
 .AUTHOR Pier-Luc.Duchaine@groupecanam.com
-.COMPANYNAME 
-.COPYRIGHT 
-.TAGS 
-.LICENSEURI 
-.PROJECTURI 
-.ICONURI 
-.EXTERNALMODULEDEPENDENCIES 
-.REQUIREDSCRIPTS 
-.EXTERNALSCRIPTDEPENDENCIES 
-.RELEASENOTES
 #>
 
 <# 
@@ -27,28 +17,23 @@
 #> 
 
 [CmdletBinding()]
-Param(
-    [System.Xml.XmlElement][Parameter(ValueFromPipeline)]$xmlElement
-)
+Param([System.Xml.XmlElement][Parameter(ValueFromPipeline)]$xmlElement)
 
-if($xmlElement.InnerText -ne ""){
-    $xmlElement.InnerText
-}
-else {
-    $PSObject = New-Object PSObject
+$PSObject = New-Object PSObject
     
-    foreach($attribute in $xmlElement.Attributes){
-        $PSObject | Add-Member NoteProperty $attribute.Name $attribute.Value
-    }  
+foreach($attribute in $xmlElement.Attributes){
+    $PSObject | Add-Member NoteProperty $attribute.Name $attribute.Value
+}
 
-    if($xmlElement.ChildNodes.Count -ne 0) {
-        $PSArray = @()
-        
-        foreach($data in $xmlElement.ChildNodes){
-            $PSArray += $data | ConvertFrom-Xml
-        }
-        $PSObject | Add-Member NoteProperty $xmlElement.LocalName $PSArray
+if($null -ne $xmlElement.'#text'){
+    return $xmlElement.'#text'
+}
+elseif($xmlElement.ChildNodes.Count -ne 0) {
+    $PSArray = @()
+    foreach($data in $xmlElement.ChildNodes){
+        $PSArray += $data | ConvertFrom-Xml
     }
-    
-    $PSObject 
+    $PSObject | Add-Member NoteProperty $xmlElement.LocalName $PSArray
 }
+
+return $PSObject 
